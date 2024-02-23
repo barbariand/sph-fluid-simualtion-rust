@@ -72,9 +72,9 @@ impl CellManager {
     }
 
     pub fn get_adjacent_cell_keys_from_position(&self, position: Vector2D<f32>) -> Vec<usize> {
-        let current_cell_coord = self.particle_position_to_cell_coord(position);
-
-        let mut adjacent_cell_coords = vec![
+        let current_cell_coord = self.particle_position_to_cell_coord(position).as_isizes();
+        // use iterators beacuse faster to use
+        vec![
             current_cell_coord + Vector2D::new(-1, -1),
             current_cell_coord + Vector2D::new(-1, 0),
             current_cell_coord + Vector2D::new(-1, 1),
@@ -84,23 +84,17 @@ impl CellManager {
             current_cell_coord + Vector2D::new(1, -1),
             current_cell_coord + Vector2D::new(1, 0),
             current_cell_coord + Vector2D::new(1, 1),
-        ];
-
-        adjacent_cell_coords = adjacent_cell_coords
-            .iter()
-            .cloned()
-            .filter(|coord| {
-                coord.x >= 0
-                    && coord.x < self.number_of_columns
-                    && coord.y >= 0
-                    && coord.y < self.number_of_rows
-            })
-            .collect();
-        let adjacent_cell_keys = adjacent_cell_coords
-            .iter()
-            .map(|coord| self.cell_coord_to_cell_key(*coord))
-            .collect();
-        adjacent_cell_keys
+        ] //use into_iter when you wil not be using the values in other places skipss the need for cloning
+        .into_iter()
+        .filter_map(|coord: Vector2D<isize>| {
+            //filter and map usng a Option/None where None is filterd out
+            (coord.x >= 0
+                && coord.x < self.number_of_columns as isize
+                && coord.y >= 0
+                && coord.y < self.number_of_rows as isize)
+                .then_some(self.cell_coord_to_cell_key(coord.as_usizes()))
+        })
+        .collect()
     }
 
     pub fn get_particle_indexes_from_cell(&self, cell_key: usize) -> Vec<usize> {
