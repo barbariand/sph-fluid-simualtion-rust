@@ -1,5 +1,3 @@
-
-
 #[cfg(test)]
 mod tests {
     use coding_challenges::fluid_simulation::{cell_manager::CellManager, particle::Particle};
@@ -20,13 +18,10 @@ mod tests {
             Particle::new(5, Vector2D::new(1.5, 2.5)),
             Particle::new(6, Vector2D::new(2.5, 0.5)),
             Particle::new(7, Vector2D::new(2.5, 1.5)),
-            Particle::new(8, Vector2D::new(2.5, 2.5))
+            Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager = CellManager::new(
-            particle_count as i32,
-            box_dimensions,
-            smoothing_radius
-        );
+        let mut cell_manager =
+            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
 
         // ACT
         cell_manager.update(particles);
@@ -52,23 +47,18 @@ mod tests {
             Particle::new(5, Vector2D::new(1.5, 2.5)),
             Particle::new(6, Vector2D::new(2.5, 0.5)),
             Particle::new(7, Vector2D::new(2.5, 1.5)),
-            Particle::new(8, Vector2D::new(2.5, 2.5))
+            Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager = CellManager::new(
-            particle_count as i32,
-            box_dimensions,
-            smoothing_radius
-        );
+        let mut cell_manager =
+            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
-        let adjacent_particles = cell_manager.get_adjancet_particles(particles[4].clone(), particles);
+        let adjacent_particles = cell_manager.get_adjacent_particles(particles[4].clone().position);
 
         // ASSERT
         assert_eq!(adjacent_particles.len(), 9);
-
     }
-
 
     #[test]
     fn test_particle_position_to_cell_coord() {
@@ -76,11 +66,8 @@ mod tests {
         let particle_count: usize = 9;
         let box_dimensions: [i32; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
-        let cell_manager = CellManager::new(
-            particle_count as i32,
-            box_dimensions,
-            smoothing_radius
-        );
+        let cell_manager =
+            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
         let particles: &mut Vec<Particle> = &mut vec![
             Particle::new(0, Vector2D::new(0.5, 0.5)),
             Particle::new(1, Vector2D::new(0.5, 1.5)),
@@ -90,7 +77,7 @@ mod tests {
             Particle::new(5, Vector2D::new(1.5, 2.5)),
             Particle::new(6, Vector2D::new(2.5, 0.5)),
             Particle::new(7, Vector2D::new(2.5, 1.5)),
-            Particle::new(8, Vector2D::new(2.5, 2.5))
+            Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
 
         // ACT
@@ -122,11 +109,8 @@ mod tests {
         let particle_count: usize = 9;
         let box_dimensions: [i32; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
-        let cell_manager = CellManager::new(
-            particle_count as i32,
-            box_dimensions,
-            smoothing_radius
-        );
+        let cell_manager =
+            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
 
         // ACT
         let cell_key_0 = cell_manager.cell_coord_to_cell_key(Vector2D::new(0, 0));
@@ -166,13 +150,10 @@ mod tests {
             Particle::new(5, Vector2D::new(1.5, 2.5)),
             Particle::new(6, Vector2D::new(2.5, 0.5)),
             Particle::new(7, Vector2D::new(2.5, 1.5)),
-            Particle::new(8, Vector2D::new(2.5, 2.5))
+            Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager = CellManager::new(
-            particle_count as i32,
-            box_dimensions,
-            smoothing_radius
-        );
+        let mut cell_manager =
+            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
@@ -199,18 +180,16 @@ mod tests {
             Particle::new(5, Vector2D::new(1.5, 2.5)),
             Particle::new(6, Vector2D::new(2.5, 0.5)),
             Particle::new(7, Vector2D::new(2.5, 1.5)),
-            Particle::new(8, Vector2D::new(2.5, 2.5))
+            Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager = CellManager::new(
-            particle_count as i32,
-            box_dimensions,
-            smoothing_radius
-        );
+        let mut cell_manager =
+            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
         for index in 0..8 {
-            let particle_indexes = cell_manager.get_particle_indexes_from_cell(particles[index].cell_key);
+            let particle_indexes =
+                cell_manager.get_particle_indexes_from_cell(particles[index].cell_key);
 
             // ASSERT
             assert_eq!(particle_indexes[0], index);
@@ -233,13 +212,10 @@ mod tests {
             Particle::new(5, Vector2D::new(1.5, 2.5)),
             Particle::new(6, Vector2D::new(2.5, 0.5)),
             Particle::new(7, Vector2D::new(2.5, 1.5)),
-            Particle::new(8, Vector2D::new(2.5, 2.5))
+            Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager = CellManager::new(
-            particle_count as i32,
-            box_dimensions,
-            smoothing_radius
-        );
+        let mut cell_manager =
+            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
