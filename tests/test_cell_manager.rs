@@ -7,7 +7,7 @@ mod tests {
     fn test_update_cell_keys() {
         // ARRANGE
         let particle_count: usize = 9;
-        let box_dimensions: [i32; 2] = [3, 3];
+        let box_dimensions: [usize; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
         let particles: &mut Vec<Particle> = &mut vec![
             Particle::new(0, Vector2D::new(0.5, 0.5)),
@@ -20,8 +20,7 @@ mod tests {
             Particle::new(7, Vector2D::new(2.5, 1.5)),
             Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager =
-            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
+        let mut cell_manager = CellManager::new(particle_count, box_dimensions, smoothing_radius);
 
         // ACT
         cell_manager.update(particles);
@@ -36,7 +35,7 @@ mod tests {
     fn test_get_adjancet_particles() {
         // ARRANGE
         let particle_count: usize = 9;
-        let box_dimensions: [i32; 2] = [3, 3];
+        let box_dimensions: [usize; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
         let particles: &mut Vec<Particle> = &mut vec![
             Particle::new(0, Vector2D::new(0.5, 0.5)),
@@ -49,8 +48,7 @@ mod tests {
             Particle::new(7, Vector2D::new(2.5, 1.5)),
             Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager =
-            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
+        let mut cell_manager = CellManager::new(particle_count, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
@@ -64,10 +62,9 @@ mod tests {
     fn test_particle_position_to_cell_coord() {
         // ARRANGE
         let particle_count: usize = 9;
-        let box_dimensions: [i32; 2] = [3, 3];
+        let box_dimensions: [usize; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
-        let cell_manager =
-            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
+        let cell_manager = CellManager::new(particle_count, box_dimensions, smoothing_radius);
         let particles: &mut Vec<Particle> = &mut vec![
             Particle::new(0, Vector2D::new(0.5, 0.5)),
             Particle::new(1, Vector2D::new(0.5, 1.5)),
@@ -107,10 +104,9 @@ mod tests {
     fn test_cell_coord_to_cell_key() {
         // ARRANGE
         let particle_count: usize = 9;
-        let box_dimensions: [i32; 2] = [3, 3];
+        let box_dimensions: [usize; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
-        let cell_manager =
-            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
+        let cell_manager = CellManager::new(particle_count, box_dimensions, smoothing_radius);
 
         // ACT
         let cell_key_0 = cell_manager.cell_coord_to_cell_key(Vector2D::new(0, 0));
@@ -139,7 +135,7 @@ mod tests {
     fn test_get_ajacent_cell_keys() {
         // ARRANGE
         let particle_count: usize = 9;
-        let box_dimensions: [i32; 2] = [3, 3];
+        let box_dimensions: [usize; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
         let particles: &mut Vec<Particle> = &mut vec![
             Particle::new(0, Vector2D::new(0.5, 0.5)),
@@ -152,8 +148,7 @@ mod tests {
             Particle::new(7, Vector2D::new(2.5, 1.5)),
             Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager =
-            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
+        let mut cell_manager = CellManager::new(particle_count, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
@@ -169,7 +164,7 @@ mod tests {
     fn test_get_particle_indexes_from_cell() {
         // ARRANGE
         let particle_count: usize = 9;
-        let box_dimensions: [i32; 2] = [3, 3];
+        let box_dimensions: [usize; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
         let particles: &mut Vec<Particle> = &mut vec![
             Particle::new(0, Vector2D::new(0.5, 0.5)),
@@ -182,8 +177,7 @@ mod tests {
             Particle::new(7, Vector2D::new(2.5, 1.5)),
             Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager =
-            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
+        let mut cell_manager = CellManager::new(particle_count, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
@@ -201,7 +195,7 @@ mod tests {
     fn test_start_indices_generation() {
         // ARRANGE
         let particle_count: usize = 9;
-        let box_dimensions: [i32; 2] = [3, 3];
+        let box_dimensions: [usize; 2] = [3, 3];
         let smoothing_radius: f32 = 0.5;
         let particles: &mut Vec<Particle> = &mut vec![
             Particle::new(0, Vector2D::new(0.5, 0.5)),
@@ -214,8 +208,7 @@ mod tests {
             Particle::new(7, Vector2D::new(2.5, 1.5)),
             Particle::new(8, Vector2D::new(2.5, 2.5)),
         ];
-        let mut cell_manager =
-            CellManager::new(particle_count as i32, box_dimensions, smoothing_radius);
+        let mut cell_manager = CellManager::new(particle_count, box_dimensions, smoothing_radius);
         cell_manager.update(particles);
 
         // ACT
