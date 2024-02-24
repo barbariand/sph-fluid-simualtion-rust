@@ -12,7 +12,11 @@ use piston::MouseButton;
 use piston::ReleaseEvent;
 use piston::UpdateArgs;
 use rand::Rng;
-use std::time::Instant;
+use rayon::iter::IndexedParallelIterator;
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefMutIterator;
+use rayon::iter::ParallelIterator;
+
 use vector2d::Vector2D;
 
 pub struct FluidSimulationApp {
@@ -38,7 +42,7 @@ impl FluidSimulationApp {
                 Particle::new(
                     index,
                     Vector2D::new(
-                        rng.gen_range(0.0..(300 as f32)),
+                        rng.gen_range(0.0..300_f32),
                         rng.gen_range(0.0..(box_dimensions[1] as f32)),
                     ),
                 )
@@ -55,56 +59,58 @@ impl FluidSimulationApp {
             ),
             external_attractor: ExternalAttractor::new(),
             collision_manager: CollisionManager::new(box_dimensions),
-            cell_manager: CellManager::new(
-                particle_count as usize,
-                box_dimensions,
-                smoothing_radius,
-            ),
+            cell_manager: CellManager::new(particle_count, box_dimensions, smoothing_radius),
         }
     }
 
     pub fn update(&mut self, _args: &UpdateArgs) {
-        for index in 0..self.particles.len() {
-            let particle = &mut self.particles[index];
+        let len = self.particles.len();
+        self.particles.par_iter_mut().for_each(|particle| {
             self.dynamics_manager.update_position(particle);
             self.collision_manager.apply_boundary_conditions(particle);
-        }
+        });
         self.cell_manager.update(&mut self.particles);
 
-        //let start = Instant::now();
+        let denacc = (0..len)
+            .into_par_iter() //rayon
+            .map(|particle_index| {
+                let adjacente_particles_indices = self
+                    .cell_manager
+                    .get_adjacent_particles(self.particles[particle_index].position);
 
-        for particle_index in 0..self.particles.len() {
-            let adjacente_particles_indices: Vec<usize> = self
-                .cell_manager
-                .get_adjacent_particles(self.particles[particle_index].position);
-            self.particles[particle_index].local_density = self
-                .smoothed_interaction
-                .calculate_density(particle_index, adjacente_particles_indices, &self.particles);
-        }
+                let mut acceleration = self.smoothed_interaction.calculate_pressure(
+                    particle_index,
+                    adjacente_particles_indices,
+                    &self.particles,
+                );
+                acceleration += self.smoothed_interaction.calculate_viscosity(
+                    particle_index,
+                    adjacente_particles_indices,
+                    &self.particles,
+                );
 
-        //println!("Density {:?}", start.elapsed());
+                (
+                    acceleration,
+                    self.smoothed_interaction.calculate_density(
+                        particle_index,
+                        adjacente_particles_indices,
+                        &self.particles,
+                    ),
+                ) // calulate as before but dont apply it
+            })
+            .collect::<Vec<_>>();
 
-        for particle_index in 0..self.particles.len() {
-            let adjacente_particles_indices: Vec<usize> = self
-                .cell_manager
-                .get_adjacent_particles(self.particles[particle_index].position);
-            let mut acceleration = self.smoothed_interaction.calculate_pressure(
-                particle_index,
-                &adjacente_particles_indices,
-                &self.particles,
-            );
-            acceleration += self.smoothed_interaction.calculate_viscosity(
-                particle_index,
-                &adjacente_particles_indices,
-                &self.particles,
-            );
-            acceleration += self
-                .external_attractor
-                .get_external_attraction_acceleration(&mut self.particles[particle_index]);
-            self.particles[particle_index].acceleration = acceleration;
-            self.dynamics_manager
-                .update_velocity(&mut self.particles[particle_index]);
-        }
+        self.particles
+            .par_iter_mut()
+            .zip(denacc.into_par_iter())
+            .for_each(|(particle, (acceleration, dencity))| {
+                particle.acceleration = acceleration
+                    + self
+                        .external_attractor
+                        .get_external_attraction_acceleration(particle);
+                particle.local_density = dencity;
+                self.dynamics_manager.update_velocity(particle);
+            }); // apply it
     }
 
     pub fn handle_event(&mut self, event: Event) {
@@ -116,7 +122,7 @@ impl FluidSimulationApp {
         }
         if let Some(Button::Mouse(MouseButton::Left)) = event.press_args() {
             self.external_attractor
-                .activate(Vector2D::new(400.0 as f32, 100.0 as f32));
+                .activate(Vector2D::new(400.0_f32, 100.0_f32));
         }
         if let Some(Button::Mouse(MouseButton::Left)) = event.release_args() {
             self.external_attractor.active = false;
