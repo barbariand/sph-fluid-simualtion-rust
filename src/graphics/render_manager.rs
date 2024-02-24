@@ -1,74 +1,72 @@
 use crate::fluid_simulation::particle::Particle;
+use graphics::*;
+use itertools::Itertools;
 use opengl_graphics::GlGraphics;
 use piston::RenderArgs;
-use std::cmp::max;
-use graphics::*;
-
 
 pub struct RenderManager {
-  gl: GlGraphics
+    gl: GlGraphics,
 }
-
-
+const BLACK_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 impl RenderManager {
-
-  pub fn new(gl: GlGraphics) -> Self {
-    RenderManager {
-        gl
-    }
-  }
-
-
-  pub fn render(&mut self, args: &RenderArgs, particles: Vec<Particle>) {
-    const BLACK_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
-    self.gl.draw(args.viewport(), |c, gl| {
-        clear(BLACK_COLOR, gl);
-        for particle in particles {
-            let color = Self::speed_to_color_gradient(particle.speed());
-            ellipse(
-                color,
-                //[0.0, 0.0, 1.0, 1.0],
-                [particle.position.x as f64, particle.position.y as f64, 5.0, 5.0],
-                c.transform,
-                gl,
-            );
-        }
-    });
-  }
-
-  fn speed_to_color_gradient(speed: f32) -> [f32; 4] {
-    const MAX_SPEED: f32 = 250.0;
-    let ratio: f32 = speed / MAX_SPEED;
-    let normalized = (ratio * 256.0 * 4.0) as i32;
-    let region = (normalized / 256) as i32;
-    let x = normalized % 256;
-    let mut r = 0.0;
-    let mut g = 0.0;
-    let mut b = 0.0;
-    match region {
-        3 => {
-            r = 1.0;
-            g = (max(255 - x, 0) as f32)/ 255.0;
-            b = 0.0;
-        }
-        2 => {
-            r = (max(x, 0) as f32) / 255.0;
-            g = 1.0;
-            b = 0.0;
-        }
-        1 => {
-            r = 0.0;
-            g = 1.0;
-            b = (max(255 - x, 0) as f32) / 255.0;
-        }
-        0 => {
-            r = 0.0;
-            g = (max(x, 0) as f32) / 255.0;
-            b = 1.0;
-        }
-        _ => {}
+    pub fn new(gl: GlGraphics) -> Self {
+        RenderManager { gl }
     }
 
-    [r, g, b, 1.0]
-  } 
+    pub fn render(&mut self, args: &RenderArgs, particles: Vec<Particle>) {
+        self.gl.draw(args.viewport(), |c, gl| {
+            clear(BLACK_COLOR, gl);
+
+            let draw_state = Default::default();
+            particles
+                .into_iter()
+                .group_by(|v| speed_to_color_gradient(v.speed() as f32))
+                .into_iter()
+                .map(|(color, particle_group)| {
+                    let len = particle_group.size_hint().1.unwrap_or(100) * 10;
+                    (
+                        color,
+                        particle_group.fold(Vec::with_capacity(len), |mut vec, particle| {
+                            triangulation::with_ellipse_tri_list(
+                                10,
+                                c.transform,
+                                [
+                                    particle.position.x as f64,
+                                    particle.position.y as f64,
+                                    5.0,
+                                    5.0,
+                                ],
+                                |vertices: &[[f32; 2]]| vec.extend_from_slice(vertices),
+                            );
+
+                            vec
+                        }),
+                    )
+                })
+                .for_each(|(color, particle_group)| {
+                    gl.tri_list(&draw_state, &color, |f| {
+                        let (v, e): (&[[[f32; 2]; BACK_END_MAX_VERTEX_COUNT]], &[[f32; 2]]) =
+                            particle_group.as_chunks();
+                        f(e);
+
+                        v.into_iter().for_each(|val| f(val));
+                    });
+                });
+        });
+    }
+}
+const INVERSED_MAX_SPEED: f32 = 1.0 / 250.0;
+const INVERSE_255: f32 = 1.0 / 255.0;
+fn speed_to_color_gradient(speed: f32) -> [f32; 4] {
+    let ratio: f32 = speed * INVERSED_MAX_SPEED;
+    let region = (ratio * 4.0) as i32;
+
+    let x = (region % 256) as f32;
+    return match region {
+        3 => [1.0, (255.0 - x) * INVERSE_255, 0.0, 1.0],
+        2 => [(x as f32) * INVERSE_255, 1.0, 0.0, 1.0],
+        1 => [0.0, 1.0, (255.0 - x) * INVERSE_255, 1.0],
+        0 => [0.0, x * INVERSE_255, 1.0, 1.0],
+        _ => [1.0, 0.0, 0.0, 1.0],
+    };
 }
