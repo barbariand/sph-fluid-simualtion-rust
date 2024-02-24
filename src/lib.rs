@@ -1,3 +1,4 @@
+#![feature(slice_as_chunks)]
 pub mod fluid_simulation;
 pub mod graphics;
 
